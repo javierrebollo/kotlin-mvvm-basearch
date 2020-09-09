@@ -1,0 +1,133 @@
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file('playstore_key.properties')
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-kapt'
+apply plugin: "androidx.navigation.safeargs.kotlin"
+
+android {
+    compileSdkVersion rootProject.compileSdkVersion
+
+    defaultConfig {
+        vectorDrawables.useSupportLibrary = true
+
+        applicationId "com.javierrebollo.basearch"
+
+        minSdkVersion rootProject.minSdkVersion
+        targetSdkVersion rootProject.targetSdkVersion
+        versionCode rootProject.versionCode
+        versionName rootProject.versionName
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        kotlinOptions {
+            jvmTarget = JavaVersion.VERSION_1_8.toString()
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_1_8
+
+        kotlinOptions {
+            freeCompilerArgs = ["-XXLanguage:+InlineClasses"]
+        }
+    }
+
+    buildFeatures {
+        dataBinding true
+        viewBinding true
+    }
+
+    flavorDimensions "default"
+
+    signingConfigs {
+        internalRelease {
+            keyAlias 'keyAlias'
+            keyPassword 'keyPassword'
+            storeFile file('../keystore/internal.jks')
+            storePassword 'storePassword'
+        }
+        playStore {
+            keyAlias keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['keyPassword']
+            storeFile file('../keystore/playstore.jks')
+            storePassword keystoreProperties['storePassword']
+        }
+    }
+
+    productFlavors {
+        mock {
+            resValue "string", "app_name", "BaseArch Mock"
+            applicationId "com.javierrebollo.basearch.mock"
+            signingConfig signingConfigs.internalRelease
+            buildConfigField "String", "BASE_URL", '"https://kotlin-mvvm-basearch-backend.herokuapp.com/"'
+            manifestPlaceholders = [
+                    providerRoute: "com.javierrebollo.basearch.mock.fileprovider",
+            ]
+            buildConfigField("boolean", "MOCK", "false")
+        }
+
+        uat {
+            resValue "string", "app_name", "BaseArch Uat"
+            applicationId "com.javierrebollo.basearch.uat"
+            signingConfig signingConfigs.internalRelease
+            buildConfigField "String", "BASE_URL", '"https://kotlin-mvvm-basearch-backend.herokuapp.com/"'
+            manifestPlaceholders = [
+                    providerRoute: "com.javierrebollo.basearch.uat.fileprovider",
+            ]
+        }
+
+        live {
+            resValue "string", "app_name", "BaseArch"
+            applicationId "com.javierrebollo.basearch"
+            signingConfig signingConfigs.playStore
+            buildConfigField "String", "BASE_URL", '"https://kotlin-mvvm-basearch-backend.herokuapp.com/"'
+            manifestPlaceholders = [
+                    providerRoute: "com.javierrebollo.basearch.fileprovider",
+            ]
+        }
+    }
+
+    sourceSets.mock.resources.srcDirs += ["src/mock/assets"]
+}
+
+dependencies {
+    implementation fileTree(dir: "libs", include: ["*.jar"])
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+
+    implementation "androidx.core:core-ktx:$coreKtxVersion"
+    implementation "androidx.appcompat:appcompat:$appCompatVersion"
+    implementation "androidx.constraintlayout:constraintlayout:$constraintLayoutVersion"
+    implementation "androidx.navigation:navigation-fragment-ktx:$navigationVersion"
+    implementation "androidx.navigation:navigation-ui-ktx:$navigationVersion"
+    implementation "androidx.lifecycle:lifecycle-extensions:$lifecycleVersion"
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycleVersion"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleVersion"
+    implementation "com.github.bumptech.glide:glide:$glideVersion"
+
+    implementation "com.squareup.okhttp3:okhttp:$okHttpVersion"
+
+
+    // Dependencies for local unit tests
+    testImplementation "junit:junit:$junitVersion"
+    testImplementation "androidx.arch.core:core-testing:$archTestingVersion"
+    testImplementation "androidx.test:core-ktx:$androidXTestCoreVersion"
+    testImplementation "androidx.test.ext:junit:$androidXTestExtKotlinRunnerVersion"
+    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesTestVersion"
+    testImplementation "org.mockito:mockito-core:$mockitoVersion"
+
+    androidTestImplementation "androidx.test.ext:junit:$junitExtVersion"
+    androidTestImplementation "androidx.test.espresso:espresso-core:$expressoVersion"
+}

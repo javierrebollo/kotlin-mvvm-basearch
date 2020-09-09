@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="margin_default">16dp</dimen>
+    <dimen name="margin_default_half">8dp</dimen>
+
+    <dimen name="toolbar_title_margin">16dp</dimen>
+
+    <dimen name="bottom_menu_height">54dp</dimen>
+    <dimen name="bottom_icon_menu">23dp</dimen>
+
+    <dimen name="user_list_image_size">80dp</dimen>
+</resources>

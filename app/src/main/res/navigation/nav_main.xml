@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_main"
+    app:startDestination="@id/splash">
+
+    <fragment
+        android:id="@+id/splash"
+        android:label="Splash"
+        android:name="com.javierrebollo.basearch.ui.screens.splash.SplashFragment"
+        tools:layout="@layout/fragment_splash">
+        <action
+            android:id="@+id/fromSplashToLogin"
+            app:destination="@id/login"
+            app:launchSingleTop="true"
+            app:popUpTo="@+id/nav_main"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/fromSplashToUserList"
+            app:destination="@id/userList"
+            app:launchSingleTop="true"
+            app:popUpTo="@+id/nav_main"
+            app:popUpToInclusive="true" />
+    </fragment>
+    <fragment
+        android:id="@+id/login"
+        android:label="Login"
+        android:name="com.javierrebollo.basearch.ui.screens.login.LoginFragment"
+        tools:layout="@layout/fragment_login">
+        <action
+            android:id="@+id/fromLoginToUserList"
+            app:destination="@id/userList"
+            app:launchSingleTop="true"
+            app:popUpTo="@+id/nav_main"
+            app:popUpToInclusive="true" />
+    </fragment>
+    <fragment
+        android:id="@+id/userList"
+        android:label="UserList"
+        android:name="com.javierrebollo.basearch.ui.screens.userlist.UserListFragment"
+        tools:layout="@layout/fragment_user_list" />
+</navigation>
