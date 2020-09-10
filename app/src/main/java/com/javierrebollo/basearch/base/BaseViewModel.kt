@@ -48,7 +48,6 @@ abstract class BaseViewModel : ViewModel() {
 
 
     @UiThread
-
     fun goTo(direction: NavDirections) {
         _navigation.value = NavigationCommand.To(direction)
     }

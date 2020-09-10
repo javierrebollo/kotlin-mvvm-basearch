@@ -1,48 +1,57 @@
 package com.javierrebollo.basearch.ui
 
-import androidx.lifecycle.Observer
+import android.content.Context
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
+import com.javierrebollo.basearch.BaseApplication
 import com.javierrebollo.basearch.base.ErrorType
+import com.javierrebollo.basearch.domain.entity.TaskResult
+import com.javierrebollo.basearch.domain.entity.Token
 import com.javierrebollo.basearch.domain.usecase.LoginUseCase
+import com.javierrebollo.basearch.getOrAwaitValue
+import com.javierrebollo.basearch.ui.screens.login.LoginFragmentDirections
 import com.javierrebollo.basearch.ui.screens.login.LoginVM
+import com.javierrebollo.basearch.utils.NavigationCommand
+import io.mockk.MockKAnnotations
+import io.mockk.coEvery
+import io.mockk.every
+import io.mockk.impl.annotations.RelaxedMockK
+import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.ObsoleteCoroutinesApi
-import kotlinx.coroutines.newSingleThreadContext
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
-import org.junit.After
-import org.junit.Before
-import org.junit.Test
+import org.junit.*
+import org.junit.rules.TestRule
 import org.junit.runner.RunWith
-import org.mockito.Mock
-import org.mockito.MockitoAnnotations
-import org.mockito.junit.MockitoJUnitRunner
+import org.mockito.ArgumentMatchers.anyString
+import org.robolectric.RobolectricTestRunner
+import java.util.concurrent.Executors
 
 @ExperimentalCoroutinesApi
-@RunWith(MockitoJUnitRunner::class)
+@RunWith(RobolectricTestRunner::class)
 class LoginViewModelTest {
-
-    @ObsoleteCoroutinesApi
-    private val mainThreadSurrogate = newSingleThreadContext("UI thread")
+    @get:Rule
+    val testInstantTaskExecutorRule: TestRule = InstantTaskExecutorRule()
+    private val mainThreadSurrogate = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
+    private val context: Context = getInstrumentation().targetContext.applicationContext
 
     private lateinit var viewModel: LoginVM
 
-    @Mock
-    lateinit var loginUseCase: LoginUseCase
+    @RelaxedMockK
+    private lateinit var getLoginUseCase: LoginUseCase
 
-    @Mock
-    lateinit var alertErrorMessage: Observer<ErrorType>
-
-
-    @ObsoleteCoroutinesApi
     @Before
     fun setUp() {
-        MockitoAnnotations.initMocks(this)
+        MockKAnnotations.init(this, relaxUnitFun = true)
         Dispatchers.setMain(mainThreadSurrogate)
-        viewModel = LoginVM(loginUseCase)
+        BaseApplication.instance = mockk<BaseApplication>()
+        every { BaseApplication.instance.getString(any()) } returns ""
+        viewModel = LoginVM(getLoginUseCase)
     }
 
-    @ObsoleteCoroutinesApi
     @After
     fun tearDown() {
         Dispatchers.resetMain()
@@ -51,9 +60,35 @@ class LoginViewModelTest {
 
     @Test
     fun performSuccessLogin() {
+        coEvery {
+            getLoginUseCase.invoke("", "")
+        } returns TaskResult.SuccessResult<Token>(anyString())
+
+        viewModel.performLogin()
+
+        val response = viewModel.navigation.getOrAwaitValue()
+
+        Assert.assertEquals(
+            response,
+            NavigationCommand.To(LoginFragmentDirections.fromLoginToUserList())
+        )
     }
 
     @Test
     fun performFailureLogin() {
+        coEvery {
+            getLoginUseCase.invoke(anyString(), anyString())
+        } returns TaskResult.ErrorResult<Token>(Exception())
+
+        runBlocking {
+
+            viewModel.performLogin()
+            val errorType: ErrorType = viewModel.errorNotifier.getOrAwaitValue()
+
+            Assert.assertEquals(
+                errorType,
+                ErrorType.LoginFail(anyString())
+            )
+        }
     }
 }

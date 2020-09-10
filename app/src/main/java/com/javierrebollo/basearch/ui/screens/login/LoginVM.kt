@@ -10,7 +10,9 @@ import com.javierrebollo.basearch.base.ErrorType
 import com.javierrebollo.basearch.domain.entity.on
 import com.javierrebollo.basearch.domain.usecase.LoginUseCase
 import com.javierrebollo.basearch.utils.extensions.getString
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class LoginVM(
     private val loginUseCase: LoginUseCase
@@ -23,7 +25,9 @@ class LoginVM(
         viewModelScope.launch {
             loginUseCase(username.value!!, password.value!!).on(
                 success = {
-                    goTo(LoginFragmentDirections.fromLoginToUserList())
+                    withContext(Dispatchers.Main) {
+                        goTo(LoginFragmentDirections.fromLoginToUserList())
+                    }
                     Log.d(TAG, "Result: $it")
                 },
                 failure = {

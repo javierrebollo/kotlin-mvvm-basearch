@@ -5,8 +5,8 @@ import com.javierrebollo.basearch.utils.Foreground
 
 class BaseApplication : Application() {
     companion object {
-        lateinit var instance: BaseApplication
-            private set
+        lateinit var instance: Application
+//            private set
     }
 
     override fun onCreate() {
