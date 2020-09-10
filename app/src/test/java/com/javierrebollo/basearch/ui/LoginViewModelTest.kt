@@ -1,8 +1,6 @@
 package com.javierrebollo.basearch.ui
 
-import android.content.Context
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
 import com.javierrebollo.basearch.BaseApplication
 import com.javierrebollo.basearch.base.ErrorType
 import com.javierrebollo.basearch.domain.entity.TaskResult
@@ -36,7 +34,6 @@ class LoginViewModelTest {
     @get:Rule
     val testInstantTaskExecutorRule: TestRule = InstantTaskExecutorRule()
     private val mainThreadSurrogate = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
-    private val context: Context = getInstrumentation().targetContext.applicationContext
 
     private lateinit var viewModel: LoginVM
 
